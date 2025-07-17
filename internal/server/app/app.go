@@ -1,11 +1,16 @@
 package app
 
 import (
+	"GophKeeper/internal/common"
 	"GophKeeper/internal/server/config"
+	"GophKeeper/internal/server/manager"
+	"GophKeeper/internal/server/repository"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 	"net"
 	"os/signal"
 	"syscall"
@@ -66,7 +71,10 @@ func (a *App) Run() error {
 	}
 
 	go func() {
-		logger.Logger.Info("Starting gRPC server", zap.String("addr", a.cfg.Listen))
+		common.Logger.Info("Starting gRPC server", zap.String("addr", a.cfg.Port))
+		if err := grpcServer.Serve(listener); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
+			common.Logger.Error("gRPC server failed", zap.Error(err))
+		}
 
 		stop()
 	}()
@@ -74,7 +82,7 @@ func (a *App) Run() error {
 	<-ctx.Done()
 	stop()
 
-	logger.Logger.Info("Shutting down server...")
+	common.Logger.Info("Shutting down server...")
 
 	logger.Logger.Info("Server stopped gracefully")
 
