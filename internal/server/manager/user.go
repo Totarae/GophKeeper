@@ -9,7 +9,8 @@ import (
 )
 
 var (
-	ErrUserExists = errors.New("user already exists")
+	ErrUserExists         = errors.New("user already exists")
+	ErrInvalidCredentials = errors.New("invalid credentials")
 )
 
 type UserRepository interface {
@@ -59,6 +60,32 @@ func (m *UserManager) Register(login, password, masterPassword string) (string, 
 	user, err := m.userRepo.GetUserByLogin(login)
 	if err != nil || user == nil {
 		return "", err
+	}
+
+	return m.jwt.Encode(user.ID, login)
+}
+
+func (m *UserManager) Login(login, password, masterPassword string) (string, error) {
+	user, err := m.userRepo.GetUserByLogin(login)
+	if err != nil {
+		return "", err
+	}
+	if user == nil {
+		return "", ErrInvalidCredentials
+	}
+
+	if err := bcrypt.CompareHashAndPassword(
+		[]byte(user.PasswordHash),
+		[]byte(password),
+	); err != nil {
+		return "", ErrInvalidCredentials
+	}
+
+	if err := bcrypt.CompareHashAndPassword(
+		[]byte(user.MasterPasswordHash),
+		[]byte(masterPassword),
+	); err != nil {
+		return "", ErrInvalidCredentials
 	}
 
 	return m.jwt.Encode(user.ID, login)
