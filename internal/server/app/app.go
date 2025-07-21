@@ -2,13 +2,17 @@ package app
 
 import (
 	"GophKeeper/internal/common"
+	__ "GophKeeper/internal/pkg/proto_gen"
 	"GophKeeper/internal/server/config"
+	grpcs "GophKeeper/internal/server/grpc"
+	"GophKeeper/internal/server/jwt"
 	"GophKeeper/internal/server/manager"
 	"GophKeeper/internal/server/repository"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
+	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"net"
@@ -63,7 +67,15 @@ func (a *App) Run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	//grpc server
+	grpcServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			grpcs.NewAuthInterceptor(a.services.userManager).Unary(),
+		),
+	)
+	grpcInternal := grpcs.NewServer(a.services.userManager, a.services.dataManager)
+	// Без пакета, потому так криво
+	__.RegisterAuthServiceServer(grpcServer, grpcInternal)
+	__.RegisterDataServiceServer(grpcServer, grpcInternal)
 
 	listener, err := net.Listen("tcp", a.cfg.Port)
 	if err != nil {
@@ -84,13 +96,18 @@ func (a *App) Run() error {
 
 	common.Logger.Info("Shutting down server...")
 
-	logger.Logger.Info("Server stopped gracefully")
+	grpcServer.GracefulStop()
+	if err := a.db.Close(); err != nil {
+		common.Logger.Error("Failed to close db connection", zap.Error(err))
+	}
+
+	common.Logger.Info("Server stopped gracefully")
 
 	return nil
 }
 
 func initDB(cfg *config.Config) (*sql.DB, error) {
-	db, err := sql.Open("mysql", cfg.DatabaseDSN+"?parseTime=true")
+	db, err := sql.Open("postgres", cfg.DatabaseDSN)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open db: %w", err)
 	}

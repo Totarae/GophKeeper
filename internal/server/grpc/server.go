@@ -1,10 +1,13 @@
 package grpc
 
-import "GophKeeper/internal/server/manager"
+import (
+	__ "GophKeeper/internal/pkg/proto_gen"
+	"GophKeeper/internal/server/manager"
+)
 
 type Server struct {
-	proto.UnimplementedAuthServiceServer
-	proto.UnimplementedDataServiceServer
+	__.UnimplementedAuthServiceServer
+	__.UnimplementedDataServiceServer
 
 	userManager UserManagerInterface
 	dataManager UserDataManagerInterface
