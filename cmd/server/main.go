@@ -1,7 +1,7 @@
 package main
 
 import (
-	"GophKeeper/internal/common"
+	"GophKeeper/internal/common/logger"
 	"GophKeeper/internal/server/app"
 )
 
@@ -12,7 +12,7 @@ var (
 )
 
 func main() {
-	common.PrintBuildInfo(buildVersion, buildDate, buildCommit)
+	logger.PrintBuildInfo(buildVersion, buildDate, buildCommit)
 
 	app, err := app.New()
 	if err != nil {

@@ -1,7 +1,7 @@
 package app
 
 import (
-	"GophKeeper/internal/common"
+	"GophKeeper/internal/common/logger"
 	__ "GophKeeper/internal/pkg/proto_gen"
 	"GophKeeper/internal/server/config"
 	grpcs "GophKeeper/internal/server/grpc"
@@ -83,9 +83,9 @@ func (a *App) Run() error {
 	}
 
 	go func() {
-		common.Logger.Info("Starting gRPC server", zap.String("addr", a.cfg.Port))
+		logger.Logger.Info("Starting gRPC server", zap.String("addr", a.cfg.Port))
 		if err := grpcServer.Serve(listener); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
-			common.Logger.Error("gRPC server failed", zap.Error(err))
+			logger.Logger.Error("gRPC server failed", zap.Error(err))
 		}
 
 		stop()
@@ -94,14 +94,14 @@ func (a *App) Run() error {
 	<-ctx.Done()
 	stop()
 
-	common.Logger.Info("Shutting down server...")
+	logger.Logger.Info("Shutting down server...")
 
 	grpcServer.GracefulStop()
 	if err := a.db.Close(); err != nil {
-		common.Logger.Error("Failed to close db connection", zap.Error(err))
+		logger.Logger.Error("Failed to close db connection", zap.Error(err))
 	}
 
-	common.Logger.Info("Server stopped gracefully")
+	logger.Logger.Info("Server stopped gracefully")
 
 	return nil
 }
