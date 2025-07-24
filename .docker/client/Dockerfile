@@ -2,14 +2,15 @@ FROM golang:1.24
 
 WORKDIR /app
 
-COPY ./go.mod ./go.mod
-COPY ./go.sum ./go.sum
-RUN go mod download
+# Копируем весь проект, включая go.mod, internal и cmd
+COPY . .
 
-COPY ./cmd/client ./cmd/client
-COPY ./internal/client ./internal/client
-COPY ./internal/common ./internal/common
+# Применяем replace и скачиваем зависимости
+RUN go mod tidy
 
-RUN CGO_ENABLED=1 GOOS=linux go build -C ./cmd/client -o client
+# Собираем клиент
+WORKDIR /app/cmd/client
+RUN CGO_ENABLED=1 GOOS=linux go build -o /app/client
 
+# Заглушка — можно заменить на запуск клиента
 CMD ["tail", "-f", "/dev/null"]

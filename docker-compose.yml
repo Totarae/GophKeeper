@@ -48,5 +48,11 @@ services:
     expose:
       - "50051"
 
+  client:
+    build:
+      context: .
+      dockerfile: .docker/client/Dockerfile
+    restart: unless-stopped
+
 volumes:
   database_data:
