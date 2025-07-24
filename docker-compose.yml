@@ -1,0 +1,37 @@
+version: '3.1'
+
+services:
+
+  db:
+    image: postgres:12.3
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - database_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      #start_period: 10s
+
+  goose:
+    image: ghcr.io/kukymbr/goose-docker:3.24.3
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      GOOSE_DRIVER: postgres
+      GOOSE_DBSTRING: "postgres://postgres:postgres@db:5432/postgres?sslmode=disable"
+      GOOSE_VERBOSE: "true"
+    volumes:
+      - ./internal/server/migrations:/migrations
+
+volumes:
+  database_data:
