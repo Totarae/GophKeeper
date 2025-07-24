@@ -33,5 +33,20 @@ services:
     volumes:
       - ./internal/server/migrations:/migrations
 
+  server:
+    depends_on:
+      goose:
+        condition: service_completed_successfully
+    build:
+      context: .
+      dockerfile: .docker/server/Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_DSN: "postgres://postgres:postgres@db:5432/postgres?sslmode=disable"
+      APP_SECRET: app_secret
+      PORT: ":50051"
+    expose:
+      - "50051"
+
 volumes:
   database_data:
