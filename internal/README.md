@@ -13,3 +13,8 @@ data-dog/go-sqlmock
 go test -coverprofile="coverage.out" ./...
 go tool cover -html="coverage.out"
 ````
+
+Собрать
+````
+docker compose build --no-cache
+````

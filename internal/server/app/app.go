@@ -15,6 +15,7 @@ import (
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"net"
 	"os/signal"
 	"syscall"
@@ -76,6 +77,9 @@ func (a *App) Run() error {
 	// Без пакета, потому так криво
 	__.RegisterAuthServiceServer(grpcServer, grpcInternal)
 	__.RegisterDataServiceServer(grpcServer, grpcInternal)
+
+	// Включаем reflection
+	reflection.Register(grpcServer)
 
 	listener, err := net.Listen("tcp", a.cfg.Port)
 	if err != nil {
