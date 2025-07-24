@@ -55,8 +55,6 @@ func (i *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {
 	}
 }
 
-type userClaimsKey struct{}
-
 func GetClaimsFromContext(ctx context.Context) (*jwt.Claims, error) {
 	val := ctx.Value(userClaimsKey{})
 	if val == nil {
