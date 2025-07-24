@@ -25,7 +25,7 @@ func (r *UserRepository) CreateUser(login, passwordHash, masterPasswordHash stri
 }
 
 func (r *UserRepository) GetUserByLogin(login string) (*model.User, error) {
-	u := &model.User{}
+	var u model.User
 	err := r.db.QueryRow(
 		`SELECT id, login, password_hash, master_password_hash FROM "user" WHERE login = $1`,
 		login,
@@ -34,5 +34,8 @@ func (r *UserRepository) GetUserByLogin(login string) (*model.User, error) {
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
-	return u, err
+	if err != nil {
+		return nil, err
+	}
+	return &u, nil
 }
