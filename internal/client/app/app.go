@@ -1,7 +1,9 @@
 package app
 
 import (
+	"GophKeeper/internal/client/cli"
 	"GophKeeper/internal/client/config"
+	"GophKeeper/internal/client/syncro"
 	"GophKeeper/internal/common/logger"
 	"GophKeeper/internal/server/manager"
 	"GophKeeper/internal/server/repository"
@@ -21,6 +23,9 @@ import (
 
 type App struct {
 	db *sql.DB
+	registry cli.CommandRegistry
+	syncer   *syncro.Synchronizer
+
 }
 
 func New() (*App, error) {
@@ -31,6 +36,15 @@ func New() (*App, error) {
 
 	logger.Init("client", zap.InfoLevel.String())
 
+	dbPath := conf.DBPath
+	if err := touchFilepath(dbPath); err != nil {
+		return nil, fmt.Errorf("can`t touch filepath: %w", err)
+	}
+
+	db, err := sql.Open("postgres", dbPath)
+	if err != nil {
+		return nil, fmt.Errorf("can't open db: %w", err)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
