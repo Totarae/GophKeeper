@@ -1,10 +1,11 @@
 package command
 
 import (
-	"GophKeeper/internal/client/aes"
-	"GophKeeper/internal/client/model"
 	"context"
 	"errors"
+	"github.com/Totarae/GophKeeper/internal/client/aes"
+	"github.com/Totarae/GophKeeper/internal/client/model"
+	value "github.com/Totarae/GophKeeper/internal/client/values"
 )
 
 type UserDataGetter interface {

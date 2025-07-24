@@ -1,10 +1,10 @@
 package syncro
 
 import (
-	__ "GophKeeper/internal/pkg/proto_gen"
-	"GophKeeper/internal/server/model"
 	"context"
 	"errors"
+	"github.com/Totarae/GophKeeper/internal/client/model"
+	__ "github.com/Totarae/GophKeeper/internal/pkg/proto_gen"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -15,7 +15,7 @@ type MockGRPCClient struct {
 	mock.Mock
 }
 
-func (m *MockGRPCClient) Upsert(ctx context.Context, data *model.UserData) (*__.DataResponse, error) {
+func (m *MockGRPCClient) Merge(ctx context.Context, data *model.UserData) (*__.DataResponse, error) {
 	args := m.Called(ctx, data)
 	return args.Get(0).(*__.DataResponse), args.Error(1)
 }
@@ -34,7 +34,7 @@ func (m *MockUserDataManager) GetUpdates(ctx context.Context, lastSync time.Time
 	return args.Get(0).([]*model.UserData), args.Error(1)
 }
 
-func (m *MockUserDataManager) Upsert(ctx context.Context, data *model.UserData) error {
+func (m *MockUserDataManager) Merge(ctx context.Context, data *model.UserData) error {
 	args := m.Called(ctx, data)
 	return args.Error(0)
 }

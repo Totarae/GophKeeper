@@ -1,9 +1,9 @@
 package grpc
 
 import (
-	"GophKeeper/internal/server/jwt"
-	"GophKeeper/internal/server/model"
 	"context"
+	"github.com/Totarae/GophKeeper/internal/server/jwt"
+	"github.com/Totarae/GophKeeper/internal/server/model"
 	"time"
 )
 

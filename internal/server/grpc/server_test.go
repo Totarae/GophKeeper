@@ -1,12 +1,12 @@
 package grpc
 
 import (
-	__ "GophKeeper/internal/pkg/proto_gen"
-	"GophKeeper/internal/server/jwt"
-	"GophKeeper/internal/server/manager"
-	"GophKeeper/internal/server/model"
 	"context"
 	"errors"
+	__ "github.com/Totarae/GophKeeper/internal/pkg/proto_gen"
+	"github.com/Totarae/GophKeeper/internal/server/jwt"
+	"github.com/Totarae/GophKeeper/internal/server/manager"
+	"github.com/Totarae/GophKeeper/internal/server/model"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"

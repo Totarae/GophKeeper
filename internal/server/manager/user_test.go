@@ -1,10 +1,10 @@
 package manager
 
 import (
-	"GophKeeper/internal/server/jwt"
-	"GophKeeper/internal/server/model"
-	"GophKeeper/internal/server/repository"
 	"errors"
+	"github.com/Totarae/GophKeeper/internal/server/jwt"
+	"github.com/Totarae/GophKeeper/internal/server/model"
+	"github.com/Totarae/GophKeeper/internal/server/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"

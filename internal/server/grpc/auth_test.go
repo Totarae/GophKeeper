@@ -1,10 +1,10 @@
 package grpc
 
 import (
-	"GophKeeper/internal/server/jwt"
-	"GophKeeper/internal/server/manager"
 	"context"
 	"errors"
+	"github.com/Totarae/GophKeeper/internal/server/jwt"
+	"github.com/Totarae/GophKeeper/internal/server/manager"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"

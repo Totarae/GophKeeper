@@ -1,9 +1,10 @@
 package syncro
 
 import (
-	"GophKeeper/internal/common/logger"
-	__ "GophKeeper/internal/pkg/proto_gen"
-	"GophKeeper/internal/server/model"
+	"github.com/Totarae/GophKeeper/internal/client/model"
+	"github.com/Totarae/GophKeeper/internal/common/logger"
+	pb "github.com/Totarae/GophKeeper/internal/pkg/proto_gen"
+
 	"context"
 	"go.uber.org/zap"
 	"sync"
@@ -11,13 +12,13 @@ import (
 )
 
 type GRPCClient interface {
-	Upsert(ctx context.Context, data *model.UserData) (*__.DataResponse, error)
-	GetUpdates(ctx context.Context, lastSync time.Time) (*__.DataListResponse, error)
+	Merge(ctx context.Context, data *model.UserData) (*pb.DataResponse, error)
+	GetUpdates(ctx context.Context, lastSync time.Time) (*pb.DataListResponse, error)
 }
 
 type UserDataManager interface {
 	GetUpdates(ctx context.Context, lastSync time.Time) ([]*model.UserData, error)
-	Upsert(ctx context.Context, data *model.UserData) error
+	Merge(ctx context.Context, data *model.UserData) error
 }
 
 type MetaManager interface {
@@ -98,7 +99,7 @@ func (s *Synchronizer) pushLocalUpdates(ctx context.Context, lastSync time.Time)
 	}
 
 	for _, data := range localUpdates {
-		_, err := s.client.Upsert(ctx, data)
+		_, err := s.client.Merge(ctx, data)
 		if err != nil {
 			logger.Logger.Warn("syncro: can't push local update to server", zap.Error(err))
 
@@ -125,7 +126,7 @@ func (s *Synchronizer) fetchRemoteUpdates(ctx context.Context, lastSync time.Tim
 			DeletedAt: item.DeletedAt.AsTime(),
 		}
 
-		if err := s.userDataMgr.Upsert(ctx, data); err != nil {
+		if err := s.userDataMgr.Merge(ctx, data); err != nil {
 			logger.Logger.Fatal("syncro: can't update local data:", zap.Error(err))
 		}
 	}

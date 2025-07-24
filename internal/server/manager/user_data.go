@@ -1,9 +1,9 @@
 package manager
 
 import (
-	"GophKeeper/internal/server/model"
-	"GophKeeper/internal/server/repository"
 	"context"
+	"github.com/Totarae/GophKeeper/internal/server/model"
+	"github.com/Totarae/GophKeeper/internal/server/repository"
 	"time"
 )
 

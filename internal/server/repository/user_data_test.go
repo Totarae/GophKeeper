@@ -1,11 +1,11 @@
 package repository
 
 import (
-	"GophKeeper/internal/server/model"
 	"context"
 	"database/sql"
 	"errors"
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/Totarae/GophKeeper/internal/server/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"

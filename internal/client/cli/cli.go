@@ -1,11 +1,11 @@
 package cli
 
 import (
-	"GophKeeper/internal/client/command"
-	"GophKeeper/internal/common/logger"
 	"bufio"
 	"context"
 	"fmt"
+	"github.com/Totarae/GophKeeper/internal/client/command"
+	"github.com/Totarae/GophKeeper/internal/common/logger"
 	"go.uber.org/zap"
 	"os"
 	"strings"

@@ -1,4 +1,4 @@
-module GophKeeper
+module github.com/Totarae/GophKeeper
 
 go 1.24.2
 

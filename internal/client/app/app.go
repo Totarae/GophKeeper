@@ -1,16 +1,19 @@
 package app
 
 import (
-	"GophKeeper/internal/client/cli"
-	"GophKeeper/internal/client/config"
-	"GophKeeper/internal/client/syncro"
-	"GophKeeper/internal/common/logger"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/Totarae/GophKeeper/internal/client/cli"
+	"github.com/Totarae/GophKeeper/internal/client/command"
+	"github.com/Totarae/GophKeeper/internal/client/config"
+	"github.com/Totarae/GophKeeper/internal/client/grpc"
+	"github.com/Totarae/GophKeeper/internal/client/manager"
+	"github.com/Totarae/GophKeeper/internal/client/repository"
+	"github.com/Totarae/GophKeeper/internal/client/syncro"
+	"github.com/Totarae/GophKeeper/internal/common/logger"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -43,8 +46,35 @@ func New() (*App, error) {
 		return nil, fmt.Errorf("can't open db: %w", err)
 	}
 
+	userDataRepo, err := repository.NewUserDataRepository(db)
+	if err != nil {
+		return nil, fmt.Errorf("can`t create data repo: %w", err)
+	}
+
+	metaRepo, err := repository.NewMetaRepository(db)
+	if err != nil {
+		return nil, fmt.Errorf("can`t create meta repo: %w", err)
+	}
+
+	userDataManager := manager.NewUserDataManager(userDataRepo)
+	metaManager := manager.NewMetaManager(metaRepo)
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
+
+	ok, err := metaManager.MasterPasswordHashDefined(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		if err := metaManager.SetMasterPassword(ctx, conf.MasterPassword); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := metaManager.ValidateMasterPassword(ctx, conf.MasterPassword); err != nil {
+			return nil, fmt.Errorf("invalid master password: %w", err)
+		}
+	}
 
 	client, err := grpc.NewClient(conf.ServerAddr)
 	if err != nil {
@@ -85,9 +115,23 @@ func touchFilepath(path string) error {
 
 func (a *App) Run() {
 	defer a.db.Close()
+	defer a.syncer.Stop()
 
-	// завершаем всё
 	var wg sync.WaitGroup
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		a.syncer.Start(ctx)
+		stop()
+	}()
+	go func() {
+		defer wg.Done()
+		cli.Run(ctx, a.registry)
+		stop()
+	}()
+
+	wg.Wait()
 
 }

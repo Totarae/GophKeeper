@@ -1,10 +1,10 @@
 package repository
 
 import (
-	"GophKeeper/internal/server/model"
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/Totarae/GophKeeper/internal/server/model"
 	"time"
 )
 

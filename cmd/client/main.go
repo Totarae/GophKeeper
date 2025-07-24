@@ -1,8 +1,8 @@
 package main
 
 import (
-	"GophKeeper/internal/client/app"
-	"GophKeeper/internal/common/buildlog"
+	"github.com/Totarae/GophKeeper/internal/client/app"
+	"github.com/Totarae/GophKeeper/internal/common/buildlog"
 )
 
 var (

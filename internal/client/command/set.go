@@ -1,23 +1,24 @@
 package command
 
 import (
-	"GophKeeper/internal/client/aes"
-	"GophKeeper/internal/client/model"
 	"context"
 	"errors"
+	"github.com/Totarae/GophKeeper/internal/client/aes"
+	"github.com/Totarae/GophKeeper/internal/client/model"
+	value "github.com/Totarae/GophKeeper/internal/client/values"
 	"time"
 )
 
-type DataUpserter interface {
-	Upsert(ctx context.Context, data *model.UserData) error
+type DataMerger interface {
+	Merge(ctx context.Context, data *model.UserData) error
 }
 
 type SetCommand struct {
-	dataManager    DataUpserter
+	dataManager    DataMerger
 	masterPassword []byte
 }
 
-func NewSetCommand(dataManager DataUpserter, masterPassword []byte) *SetCommand {
+func NewSetCommand(dataManager DataMerger, masterPassword []byte) *SetCommand {
 	return &SetCommand{
 		dataManager:    dataManager,
 		masterPassword: masterPassword,
@@ -44,7 +45,7 @@ func (c *SetCommand) Execute(ctx context.Context, args []string) (string, error)
 		return "", err
 	}
 
-	err = c.dataManager.Upsert(ctx, &model.UserData{
+	err = c.dataManager.Merge(ctx, &model.UserData{
 		DataKey:   args[0],
 		DataValue: encRaw,
 		UpdatedAt: time.Now(),

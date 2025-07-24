@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"GophKeeper/internal/server/model"
 	"database/sql"
 	"errors"
+	"github.com/Totarae/GophKeeper/internal/server/model"
 )
 
 // Самая примитивная репа, пока только C/R
