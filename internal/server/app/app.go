@@ -30,7 +30,7 @@ type App struct {
 }
 
 func New() (*App, error) {
-	cfg, err := config.Load()
+	cfg, err := config.NewConfig()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}

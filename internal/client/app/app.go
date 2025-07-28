@@ -29,7 +29,7 @@ type App struct {
 }
 
 func New() (*App, error) {
-	conf, err := config.ParseArgs()
+	conf, err := config.NewConfig()
 	if err != nil {
 		return nil, fmt.Errorf("can`t parse arguments: %w", err)
 	}

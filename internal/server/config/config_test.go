@@ -217,7 +217,7 @@ func TestLoad(t *testing.T) {
 				os.Setenv(k, v)
 			}
 
-			cfg, err := Load()
+			cfg, err := NewConfig()
 			if tt.expectedError && err == nil {
 				t.Error("Load() did not return expected error")
 			}

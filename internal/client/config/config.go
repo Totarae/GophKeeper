@@ -13,7 +13,7 @@ type Config struct {
 	SyncIntervalSec int
 }
 
-func ParseArgs() (*Config, error) {
+func NewConfig() (*Config, error) {
 	var cfg Config
 
 	flag.StringVar(&cfg.ServerAddr, "addr", "localhost:50501", "server address (host:port)")

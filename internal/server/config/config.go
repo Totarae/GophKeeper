@@ -23,7 +23,7 @@ const (
 	defaultWriteTimeout = 10 * time.Second
 )
 
-func Load() (*Config, error) {
+func NewConfig() (*Config, error) {
 	cfg := &Config{
 		Env:          getEnv("APP_ENV", "dev"),
 		DatabaseDSN:  os.Getenv("DATABASE_DSN"),
