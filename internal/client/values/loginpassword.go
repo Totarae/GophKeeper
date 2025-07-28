@@ -4,7 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
+	"strings"
 )
+
+var allowedPasswordChars = regexp.MustCompile(`^[\w!@#\$%\^&\*\(\)_\+\-=]+$`)
+
+const minPasswordSize = 8
 
 type LoginPassword struct {
 	Login    string `json:"login"`
@@ -27,8 +33,14 @@ func (v *LoginPassword) Validate() error {
 	if v.Login == "" {
 		return errors.New("login is empty")
 	}
-	if v.Password == "" {
+	if strings.TrimSpace(v.Password) == "" {
 		return errors.New("password is empty")
+	}
+	if len(v.Password) < minPasswordSize {
+		return fmt.Errorf("minimal password %d characters", minPasswordSize)
+	}
+	if !allowedPasswordChars.MatchString(v.Password) {
+		return errors.New("password contains invalid characters")
 	}
 	return nil
 }

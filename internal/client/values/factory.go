@@ -21,30 +21,13 @@ func FromBytes(data []byte) (Value, error) {
 
 	switch typ {
 	case typeLoginPassword:
-		var v LoginPassword
-		if err := json.Unmarshal(payload, &v); err != nil {
-			return nil, fmt.Errorf("invalid login/password: %w", err)
-		}
-		return &v, nil
+		return parseLoginPassword(payload)
 	case typeText:
-		var v TextValue
-		if err := json.Unmarshal(payload, &v); err != nil {
-			return nil, fmt.Errorf("invalid text: %w", err)
-		}
-		return &v, nil
+		return parseTextValue(payload)
 	case typeBinary:
-		data, err := base64.StdEncoding.DecodeString(string(payload))
-		if err != nil {
-			return nil, fmt.Errorf("invalid binary: %w", err)
-		}
-
-		return &BinaryValue{Data: data}, nil
+		return parseBinaryValue(payload)
 	case typeCard:
-		var v CardValue
-		if err := json.Unmarshal(payload, &v); err != nil {
-			return nil, fmt.Errorf("invalid card: %w", err)
-		}
-		return &v, nil
+		return parseCardValue(payload)
 	default:
 		return nil, errors.New("unknown value type")
 	}
@@ -123,4 +106,36 @@ func parseInt(str string) (int, error) {
 	var val int
 	_, err := fmt.Sscan(str, &val)
 	return val, err
+}
+
+func parseLoginPassword(payload []byte) (Value, error) {
+	var v LoginPassword
+	if err := json.Unmarshal(payload, &v); err != nil {
+		return nil, fmt.Errorf("invalid login/password: %w", err)
+	}
+	return &v, nil
+}
+
+func parseTextValue(payload []byte) (Value, error) {
+	var v TextValue
+	if err := json.Unmarshal(payload, &v); err != nil {
+		return nil, fmt.Errorf("invalid text: %w", err)
+	}
+	return &v, nil
+}
+
+func parseBinaryValue(payload []byte) (Value, error) {
+	data, err := base64.StdEncoding.DecodeString(string(payload))
+	if err != nil {
+		return nil, fmt.Errorf("invalid binary: %w", err)
+	}
+	return &BinaryValue{Data: data}, nil
+}
+
+func parseCardValue(payload []byte) (Value, error) {
+	var v CardValue
+	if err := json.Unmarshal(payload, &v); err != nil {
+		return nil, fmt.Errorf("invalid card: %w", err)
+	}
+	return &v, nil
 }

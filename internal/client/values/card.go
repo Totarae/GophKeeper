@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"unicode"
 )
 
 type CardValue struct {
@@ -28,6 +29,9 @@ func (v *CardValue) Validate() error {
 	if len(v.Number) < 13 || len(v.Number) > 19 {
 		return errors.New("invalid card number length")
 	}
+	if !IsValidLuhn(v.Number) {
+		return errors.New("invalid card number (failed Luhn check)")
+	}
 	if v.Holder == "" {
 		return errors.New("card holder is empty")
 	}
@@ -45,4 +49,28 @@ func (v *CardValue) Validate() error {
 
 func (v *CardValue) String() string {
 	return fmt.Sprintf("Card: %s, %s, %d/%d, %s", v.Number, v.Holder, v.ExpireMonth, v.ExpireYear, v.CVC)
+}
+
+// Вытащил из гофермарта
+func IsValidLuhn(number string) bool {
+	var sum int
+	double := false
+
+	for i := len(number) - 1; i >= 0; i-- {
+		ch := number[i]
+		if !unicode.IsDigit(rune(ch)) {
+			return false
+		}
+		d := int(ch - '0')
+
+		if double {
+			d *= 2
+			if d > 9 {
+				d -= 9
+			}
+		}
+		sum += d
+		double = !double
+	}
+	return sum%10 == 0
 }
