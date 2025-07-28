@@ -8,11 +8,19 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type MetaRepository interface {
+type MetaReader interface {
 	GetLastSync(ctx context.Context) (time.Time, error)
-	SetLastSync(ctx context.Context, t time.Time) error
 	GetMasterPasswordHash(ctx context.Context) (string, error)
+}
+
+type MetaWriter interface {
+	SetLastSync(ctx context.Context, t time.Time) error
 	SetMasterPasswordHash(ctx context.Context, h string) error
+}
+
+type MetaRepository interface {
+	MetaReader
+	MetaWriter
 }
 
 type MetaManager struct {

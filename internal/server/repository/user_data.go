@@ -31,7 +31,7 @@ func (r *UserDataRepository) Merge(ctx context.Context, data *model.UserData) er
 
 	var currentVersion time.Time
 	err = tx.QueryRowContext(ctx,
-		"SELECT updated_at FROM user_data WHERE user_id = $1 AND data_key = $2",
+		querySelectUserDataUpdatedAt,
 		data.UserID, data.DataKey,
 	).Scan(&currentVersion)
 
@@ -40,12 +40,7 @@ func (r *UserDataRepository) Merge(ctx context.Context, data *model.UserData) er
 	}
 
 	if errors.Is(err, sql.ErrNoRows) {
-		_, err = tx.ExecContext(ctx, `
-			INSERT INTO user_data 
-				(user_id, data_key, data_value, updated_at, deleted_at) 
-			VALUES 
-				($1, $2, $3, $4, $5)
-		`, data.UserID, data.DataKey, data.DataValue, data.UpdatedAt, data.DeletedAt)
+		_, err = tx.ExecContext(ctx, queryInsertUserData, data.UserID, data.DataKey, data.DataValue, data.UpdatedAt, data.DeletedAt)
 
 		if err != nil {
 			return err
@@ -55,14 +50,7 @@ func (r *UserDataRepository) Merge(ctx context.Context, data *model.UserData) er
 			return nil
 		}
 
-		_, err := tx.ExecContext(ctx, `
-		UPDATE user_data 
-		SET 
-			data_value = $1,
-			updated_at = $2,
-			deleted_at = $3
-		WHERE user_id = $4 AND data_key = $5
-	`, data.DataValue, data.UpdatedAt, data.DeletedAt, data.UserID, data.DataKey)
+		_, err := tx.ExecContext(ctx, queryUpdateUserData, data.DataValue, data.UpdatedAt, data.DeletedAt, data.UserID, data.DataKey)
 		if err != nil {
 			return err
 		}
@@ -73,9 +61,7 @@ func (r *UserDataRepository) Merge(ctx context.Context, data *model.UserData) er
 
 func (r *UserDataRepository) GetUpdates(ctx context.Context, userID uint32, since time.Time) ([]*model.UserData, error) {
 	rows, err := r.db.QueryContext(ctx,
-		`SELECT id, user_id, data_key, data_value, updated_at, deleted_at
-		 FROM user_data
-		 WHERE user_id = $1 AND srv_updated_at > $2`,
+		queryGetUserUpdates,
 		userID, since,
 	)
 	if err != nil {

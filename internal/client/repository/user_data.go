@@ -23,16 +23,8 @@ func NewUserDataRepository(db *sql.DB) (*UserDataRepository, error) {
 }
 
 func (r *UserDataRepository) Merge(ctx context.Context, data *model.UserData) error {
-	query := `
-		INSERT INTO user_data (data_key, data_value, updated_at, deleted_at)
-		VALUES ($1, $2, $3, $4)
-		ON CONFLICT (data_key) DO UPDATE SET
-			data_value = EXCLUDED.data_value,
-			updated_at = EXCLUDED.updated_at,
-			deleted_at = EXCLUDED.deleted_at
-	`
 	_, err := r.db.ExecContext(
-		ctx, query,
+		ctx, queryMergeUserData,
 		data.DataKey,
 		data.DataValue,
 		data.UpdatedAt.Unix(),
@@ -42,8 +34,7 @@ func (r *UserDataRepository) Merge(ctx context.Context, data *model.UserData) er
 }
 
 func (r *UserDataRepository) Get(ctx context.Context, key string) (*model.UserData, error) {
-	query := `SELECT id, data_key, data_value, updated_at, deleted_at FROM user_data WHERE data_key = $1`
-	row := r.db.QueryRowContext(ctx, query, key)
+	row := r.db.QueryRowContext(ctx, queryGetUserData, key)
 	d := &model.UserData{}
 
 	var updatedAt, deletedAt int64
@@ -62,7 +53,7 @@ func (r *UserDataRepository) Get(ctx context.Context, key string) (*model.UserDa
 }
 
 func (r *UserDataRepository) GetUpdates(ctx context.Context, after time.Time) ([]*model.UserData, error) {
-	rows, err := r.db.QueryContext(ctx, "SELECT id, data_key, data_value, updated_at, deleted_at FROM user_data WHERE updated_at > $1", after.Unix())
+	rows, err := r.db.QueryContext(ctx, queryGetUserDataUpdates, after.Unix())
 	if err != nil {
 		return nil, err
 	}
@@ -84,15 +75,9 @@ func (r *UserDataRepository) GetUpdates(ctx context.Context, after time.Time) ([
 
 func (r *UserDataRepository) init() error {
 	queries := []string{
-		`CREATE TABLE IF NOT EXISTS user_data (
-			id SERIAL PRIMARY KEY,
-			data_key TEXT NOT NULL UNIQUE,
-			data_value BYTEA NOT NULL,
-			updated_at BIGINT NOT NULL,
-			deleted_at BIGINT NOT NULL
-		)`,
-		`CREATE INDEX IF NOT EXISTS idx_updated_at ON user_data(updated_at)`,
-		`CREATE INDEX IF NOT EXISTS idx_deleted_at ON user_data(deleted_at)`,
+		queryCreateUserDataTable,
+		queryCreateIndexUpdatedAt,
+		queryCreateIndexDeletedAt,
 	}
 
 	for _, query := range queries {
