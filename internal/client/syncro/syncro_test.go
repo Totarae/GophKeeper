@@ -117,11 +117,11 @@ func TestSynchronizer_syncOnce(t *testing.T) {
 
 	metaManager.On("GetLastSync", mock.Anything).Return(lastSyncTime, nil)
 	userDataMgr.On("GetUpdates", mock.Anything, lastSyncTime).Return([]*model.UserData{localUpdate}, nil)
-	client.On("Upsert", mock.Anything, localUpdate).Return(remoteItem, nil)
+	client.On("Merge", mock.Anything, localUpdate).Return(&__.DataResponse{}, nil).Once()
 	client.On("GetUpdates", mock.Anything, lastSyncTime).Return(&__.DataListResponse{
 		Items: []*__.DataResponse{remoteItem},
 	}, nil)
-	userDataMgr.On("Upsert", mock.Anything, mock.AnythingOfType("*model.UserData")).Return(nil)
+	userDataMgr.On("Merge", mock.Anything, mock.AnythingOfType("*model.UserData")).Return(nil)
 	metaManager.On("SetLastSync", mock.Anything, mock.AnythingOfType("time.Time")).Return(nil)
 
 	s := New(client, userDataMgr, metaManager, interval)
@@ -131,9 +131,9 @@ func TestSynchronizer_syncOnce(t *testing.T) {
 
 	metaManager.AssertCalled(t, "GetLastSync", ctx)
 	userDataMgr.AssertCalled(t, "GetUpdates", ctx, lastSyncTime)
-	client.AssertCalled(t, "Upsert", ctx, localUpdate)
+	client.AssertCalled(t, "Merge", ctx, localUpdate)
 	client.AssertCalled(t, "GetUpdates", ctx, lastSyncTime)
-	userDataMgr.AssertCalled(t, "Upsert", ctx, mock.AnythingOfType("*model.UserData"))
+	userDataMgr.AssertCalled(t, "Merge", ctx, mock.AnythingOfType("*model.UserData"))
 	metaManager.AssertCalled(t, "SetLastSync", ctx, mock.AnythingOfType("time.Time"))
 }
 
@@ -161,7 +161,7 @@ func TestSynchronizer_pushLocalUpdates(t *testing.T) {
 				userDataMgr.On("GetUpdates", mock.Anything, mock.AnythingOfType("time.Time")).
 					Return(updates, nil)
 				for _, update := range updates {
-					client.On("Upsert", mock.Anything, update).Return(&__.DataResponse{}, nil)
+					client.On("Merge", mock.Anything, update).Return(&__.DataResponse{}, nil)
 				}
 			},
 			expectedResult: true,
@@ -174,7 +174,7 @@ func TestSynchronizer_pushLocalUpdates(t *testing.T) {
 				}
 				userDataMgr.On("GetUpdates", mock.Anything, mock.AnythingOfType("time.Time")).
 					Return(updates, nil)
-				client.On("Upsert", mock.Anything, updates[0]).Return(&__.DataResponse{}, errors.New("upsert error"))
+				client.On("Merge", mock.Anything, updates[0]).Return(&__.DataResponse{}, errors.New("upsert error"))
 			},
 			expectedResult: false,
 		},
@@ -223,7 +223,7 @@ func TestSynchronizer_fetchRemoteUpdates(t *testing.T) {
 				client.On("GetUpdates", mock.Anything, mock.AnythingOfType("time.Time")).
 					Return(&__.DataListResponse{Items: updates}, nil)
 				for range updates {
-					userDataMgr.On("Upsert", mock.Anything, mock.AnythingOfType("*model.UserData")).Return(nil).Once()
+					userDataMgr.On("Merge", mock.Anything, mock.AnythingOfType("*model.UserData")).Return(nil).Once()
 				}
 			},
 			expectedResult: true,
